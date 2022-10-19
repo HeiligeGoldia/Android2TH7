@@ -9,15 +9,8 @@ import {
   FlatList,
 } from "react-native";
 import React, { useEffect, useState } from "react";
-// import {launchImageLibrary} from 'react-native-image-picker';
 import * as ImagePicker from 'expo-image-picker';
-import axios from "axios";
-import { GoogleSignin } from "@react-native-google-signin/google-signin";
-import {
-  GDrive,
-  MimeTypes
-} from "@robinbobin/react-native-google-drive-api-wrapper";
-
+import axios from "axios"; 
 // const express = require('express');
 // const multer = require('multer');
 // const bodyParser = require('body-parser');
@@ -49,30 +42,30 @@ export default function App() {
     )
   }
   const [image, setImage] = useState(null);
+  const [link, setLink] = useState(null);
 
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
       quality: 1,
     });
-
-    console.log(result);
-
+    console.log(result)
     if (!result.cancelled) {
       setImage(result.uri);
     }
   };
 
-  // const handleChoosePhoto = () => {
-  //   launchImageLibrary({ noData: true }, (response) => {
-  //     console.log("--------"+response)+"--------";
-  //     if (response) {
-  //       setPhoto(response);
-  //     }
-  //   })
-  // }
+  const uploadImage = (image) => {
+    const data = new FormData();
+    data.append("file", image);
+    data.append("upload_preset", "tgmyo5ye");
+    data.append("cloud_name", "dalqhcukp");
+    fetch("https://api.cloudinary.com/v1_1/dalqhcukp/image/upload", {
+      method: "post",
+      body: data,
+    }) .then((res) => console.log(res.json()));
+  }
 
   const addUser = () => {
     if (value.length > 0) {
@@ -82,10 +75,18 @@ export default function App() {
       else{
         setUsers(users => [...users, {id: parseInt(users[users.length-1].id)+1, name: value}])
       }
+
+      if(image==null){
+        setLink("https://i.imgur.com/0OJxBTo.png")
+      }
+      else{
+        uploadImage(image)
+      }
       
       axios
         .post("https://6346d54bdb768439769f9843.mockapi.io/api/User2", {
           name: value,
+          image: link
         })
         .catch(function (error) {
           console.log(error);
@@ -103,11 +104,14 @@ export default function App() {
       <View style={{flexDirection: 'row', borderBottomColor: 'black', borderBottomWidth: 1, alignItems: 'center'}}>
         <View style={{borderColor: 'black', marginTop: 50, marginBottom: 30, marginLeft: 30, borderWidth: 2, flex: 4, height: 40}}>
           <TextInput placeholder='Name' style={{padding: 4, paddingLeft: 10}} onChangeText={(e) => setValue(e)}></TextInput>
-          <TouchableOpacity onPress={() => {
-            pickImage()
-          }}>
-            <Text style={{margin: 5}}>Upload</Text>
-          </TouchableOpacity>
+          <View style={{flexDirection: 'row'}}>
+            <TouchableOpacity style={{alignItems: 'center', justifyContent: 'center'}} onPress={() => {
+              pickImage()
+            }}>
+              <Text style={{margin: 5, marginLeft: 0, color: 'white', backgroundColor: "turquoise", height: 20}}>Upload</Text>
+            </TouchableOpacity>
+            <Text style={{width: 180, marginLeft: 10}}>{image}</Text>
+          </View>
         </View>
         <TouchableOpacity style={{flex: 1, marginTop: 50, marginBottom: 30, marginLeft: 25, marginRight: 30, 
             backgroundColor: '#43e06e', alignItems: 'center', justifyContent: 'center', height: 40 }} onPress={()=>{
