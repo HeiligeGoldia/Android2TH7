@@ -41,7 +41,7 @@ export default function App() {
       </View>
     )
   }
-  const [image, setImage] = useState(null);
+  const [image1, setImage1] = useState(null);
   const [link, setLink] = useState(null);
 
   const pickImage = async () => {
@@ -52,19 +52,30 @@ export default function App() {
     });
     console.log(result)
     if (!result.cancelled) {
-      setImage(result.uri);
+      setImage1(result.uri);
+    } else {
+      alert("Load error");
     }
   };
 
-  const uploadImage = (image) => {
+  const uploadImage = (image1) => {
+    let image2 = {
+    uri: image1,
+    type: `test/${image1.split(".")[1]}`,
+    name: `test.${image1.split(".")[1]}`,
+    };
     const data = new FormData();
-    data.append("file", image);
+    data.append("file", image2);
     data.append("upload_preset", "tgmyo5ye");
     data.append("cloud_name", "dalqhcukp");
     fetch("https://api.cloudinary.com/v1_1/dalqhcukp/image/upload", {
       method: "post",
       body: data,
-    }) .then((res) => console.log(res.json()));
+    })
+    .then((res) => res.json())
+    .then((data) => {
+      setLink(data.secure_url)
+    })
   }
 
   const addUser = () => {
@@ -76,14 +87,9 @@ export default function App() {
         setUsers(users => [...users, {id: parseInt(users[users.length-1].id)+1, name: value}])
       }
 
-      if(image==null){
+      if(image1==null){
         setLink("https://i.imgur.com/0OJxBTo.png")
-      }
-      else{
-        uploadImage(image)
-      }
-      
-      axios
+        axios
         .post("https://6346d54bdb768439769f9843.mockapi.io/api/User2", {
           name: value,
           image: link
@@ -91,6 +97,20 @@ export default function App() {
         .catch(function (error) {
           console.log(error);
         });
+      }
+      else{
+        uploadImage(image1)
+        axios
+        .post("https://6346d54bdb768439769f9843.mockapi.io/api/User2", {
+          name: value,
+          image: link
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      }
+      
+      
     }
   };
 
@@ -110,7 +130,7 @@ export default function App() {
             }}>
               <Text style={{margin: 5, marginLeft: 0, color: 'white', backgroundColor: "turquoise", height: 20}}>Upload</Text>
             </TouchableOpacity>
-            <Text style={{width: 180, marginLeft: 10}}>{image}</Text>
+            <Text style={{width: 180, marginLeft: 10}}>{image1}</Text>
           </View>
         </View>
         <TouchableOpacity style={{flex: 1, marginTop: 50, marginBottom: 30, marginLeft: 25, marginRight: 30, 
